@@ -1,0 +1,160 @@
+---
+title: "new osha inspections"
+output:
+  html_document: default
+  word_document: default
+date: "2024-06-03"
+---
+
+
+```{r setup, include=FALSE}
+#I loaded two libraries into R, ###httr ### hot and rvest, to pull a http and scrape data from a webpage. 
+
+# Then I loaded the headers to bypass the ‘403’ authentication error when loading the osha.gov website. The header which was partially written by Sean, Austin, Chatgpt, and myself was to convince the website that I was not a bot, but a person submitting a request and looking for the data.  
+
+# By having the header defined, a 403 code no longer appeared, but a 304 request did. I then had to modify my header by changing the value of the cookie that the site was requesting, I just changed the value to equal ‘1’. Also I then defined the url with the OSHA query using two variables, State=Arkansas, Office=Little Rock, and I also was looking for Fed/State data, dating from 2024 back to the given search date of 2019. 
+
+```
+
+```{r}
+library(httr)
+library(rvest)
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+# Define the headers
+headers <- c(
+  "Accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "Accept-Encoding" = "gzip, deflate, br, zstd",
+  "Accept-Language" = "en-US,en;q=0.9",
+  "Cache-Control" = "max-age=0",
+  "Cookie" = "_gid=1",
+  "If-Modified-Since" = "Mon, 03 Jun 2024 13:39:50 GMT",
+  "If-None-Match" = "\"1717421990\"",
+  "Priority" = "u=0, i",
+  "Sec-Ch-Ua" = "\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"",
+  "Sec-Ch-Ua-Mobile" = "?0",
+  "Sec-Ch-Ua-Platform" = "\"macOS\"",
+  "Sec-Fetch-Dest" = "document",
+  "Sec-Fetch-Mode" = "navigate",
+  "Sec-Fetch-Site" = "none",
+  "Sec-Fetch-User" = "?1",
+  "Upgrade-Insecure-Requests" = "1",
+  "User-Agent" = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+)
+
+# The url only displayed the first 20 results of the 1,327 results, but by modifying the url to change the violations of the page results to show ‘2000’ instead. You can see and thus scrape all 1,327 results instantly without having to break it up by 63 pages.
+# “show=2000&p_violations_exist=both”
+
+# Define the URL
+url <- "https://www.osha.gov/ords/imis/establishment.search?establishment=&state=AR&officetype=all&office=627100&sitezip=100000&startmonth=06&startday=03&startyear=2019&endmonth=06&endday=03&endyear=2024&p_case=all&p_start=160&p_finish=180&p_sort=12&p_desc=DESC&p_direction=Prev&p_show=2000&p_violations_exist=both"
+
+# Make the GET request with headers
+response <- GET(url, add_headers(.headers = headers))
+
+# Check the status code
+if (status_code(response) == 200) {
+  # If the request is successful, parse the HTML content
+  content <- content(response, as = "text")
+  webpage <- read_html(content)
+  
+  # Extract all tables
+  tables <- webpage %>%
+    html_nodes("table") %>%
+    html_table(fill = TRUE)
+  
+  # Then, because the scraper was only looking for the first table, I had to change the code to find the second table that had all of the relevant data, after inspecting the html code. 
+  
+  # Check if there are at least two tables
+  if (length(tables) >= 2) {
+    # Print the second table
+    cleaned_table <- tables[[2]]
+    print(tables[[2]])
+  } else {
+    print("Less than two tables found on the page.")
+  }
+} else {
+  print("Failed to fetch the page.")
+}
+
+#rsw comment_fix your names:
+cleaned_table <- cleaned_table %>% 
+  clean_names()
+
+```
+
+```{r}
+write.csv(cleaned_table,"osha_table.csv")
+```
+
+```{r}
+colnames(cleaned_table)
+```
+
+```{r}
+str(cleaned_table)
+```
+```{r}
+# relevant_osha <- cleaned_table %>% 
+#   select(`Date Opened`,NAICS, `Establishment Name`, Type)
+
+#rsw comment - I fixed your names
+relevant_osha <- cleaned_table %>% 
+  select(date_opened, naics, establishment_name, type) %>% 
+  mutate(naics1 = as.character(naics))
+```
+
+```{r}
+# That is about how far I got today, tomorrow I expect to be able to use the clean data for analysis and consequent visualization by taking the industry (NAICS number) and seeing which industries have the most inspections performed by OSHA, as well as see which places/industries have the most fatalities per the (fat/cat) type of complaint. 
+```
+
+
+
+```{r}
+# cleaning up the date 
+
+library(lubridate)
+```
+
+#rsw comment - this data was not loaded in your repo
+```{r}
+library(readxl)
+
+
+# gfg_data=read_excel(Users/rachellsanchez/Desktop/DJNF_Merrill/2022-NAICS-Codes-listed-numerically-2-Digit-through-6-Digit.xlsx)
+
+#rsw fixed:
+naics <- read_excel("/Users/rachellsanchez/Desktop/DJNF_Merrill/OSHA Project/NAICS_codes.xlsx") %>% 
+  clean_names() %>% 
+  rename(naics1 = x2022_naics_us_code, industry = x2022_naics_us_title)
+
+
+```
+
+```{r}
+# finding which industries have the most inspections
+
+joined_table <- relevant_osha %>%
+  inner_join(naics, by=c("naics1"="naics1"))
+```
+
+
+```{r}
+joined_table %>% 
+  count(industry) %>% 
+  arrange(desc(n))
+
+# industries with the most osha entries
+# Roofing Contractors	
+# Framing Contractors	
+# Commercial and Institutional Building Construction	
+# Poultry Processing	
+# Water and Sewer Line and Related Structures Construction	
+# Masonry Contractors	
+# Temporary Help Services	
+# Sawmills	
+# Electrical Contractors and Other Wiring Installation Contractors
+
+```
