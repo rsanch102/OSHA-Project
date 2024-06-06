@@ -10,9 +10,9 @@
 
 
 
-<meta name="date" content="2024-06-03" />
+<meta name="date" content="2024-06-05" />
 
-<title>new osha inspections</title>
+<title>Investigating which businesses are inspected by OSHA; which industries are most dangerous?</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -349,12 +349,27 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">new osha inspections</h1>
-<h4 class="date">2024-06-03</h4>
+<h1 class="title toc-ignore">Investigating which businesses are
+inspected by OSHA; which industries are most dangerous?</h1>
+<h4 class="date">2024-06-05</h4>
 
 </div>
 
 
+<p><img src="images/https://www.google.com/url?sa=i&amp;url=https%3A%2F%2Fwww.arkansasonline.com%2Flisten%2F&amp;psig=AOvVaw2g9k1NKXCF61O5S28-44_c&amp;ust=1717728305432000&amp;source=images&amp;cd=vfe&amp;opi=89978449&amp;ved=0CBIQjRxqFwoTCPih5d76xYYDFQAAAAAdAAAAABAQ.png" /></p>
+<p><strong>Memo</strong></p>
+<p>This would be an investigation into Occupational Safety and Health
+Administration (OSHA) data in Arkansas to determine which industries
+receive the most inspections and which kinds. Then consequently, use the
+inspection data to investigate these reports, which industries or
+companies have the most severe violations, or complaints per
+business.</p>
+<p>Construction and poultry businesses are the industries with the most
+fatalities and severe injuries. There is a pattern of workers falling
+off of heights of more than 14ft because of dangerous conditions and no
+guardrails.Employers are ignoring OSHA regulations, and I want to
+explore how often OSHA is following up with potentially violating
+businesses.</p>
 <pre class="r"><code>library(httr)
 library(rvest)
 library(tidyverse)</code></pre>
@@ -376,6 +391,8 @@ library(tidyverse)</code></pre>
 ## The following objects are masked from &#39;package:stats&#39;:
 ## 
 ##     chisq.test, fisher.test</code></pre>
+<pre class="r"><code>library(readxl)
+library(lubridate)</code></pre>
 <pre class="r"><code># Define the headers
 headers &lt;- c(
   &quot;Accept&quot; = &quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7&quot;,
@@ -401,7 +418,7 @@ headers &lt;- c(
 # “show=2000&amp;p_violations_exist=both”
 
 # Define the URL
-url &lt;- &quot;https://www.osha.gov/ords/imis/establishment.search?establishment=&amp;state=AR&amp;officetype=all&amp;office=627100&amp;sitezip=100000&amp;startmonth=06&amp;startday=03&amp;startyear=2019&amp;endmonth=06&amp;endday=03&amp;endyear=2024&amp;p_case=all&amp;p_start=160&amp;p_finish=180&amp;p_sort=12&amp;p_desc=DESC&amp;p_direction=Prev&amp;p_show=2000&amp;p_violations_exist=both&quot;
+url &lt;- &quot;https://www.osha.gov/ords/imis/establishment.search?establishment=&amp;state=AR&amp;officetype=all&amp;office=627100&amp;sitezip=100000&amp;startmonth=01&amp;startday=01&amp;startyear=2014&amp;endmonth=06&amp;endday=05&amp;endyear=2024&amp;p_case=all&amp;p_violations_exist=both&amp;p_start=&amp;p_finish=20&amp;p_sort=12&amp;p_desc=DESC&amp;p_direction=Next&amp;p_show=3500&quot;
 
 # Make the GET request with headers
 response &lt;- GET(url, add_headers(.headers = headers))
@@ -430,96 +447,218 @@ if (status_code(response) == 200) {
 } else {
   print(&quot;Failed to fetch the page.&quot;)
 }</code></pre>
-<pre><code>## # A tibble: 1,327 × 12
+<pre><code>## # A tibble: 3,094 × 12
 ##    ``      `#` Activity `Date Opened`    RID ST    Type       Scope SIC    NAICS
 ##    &lt;lgl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;          &lt;int&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt; &lt;lgl&gt;  &lt;int&gt;
-##  1 NA        1 1751707. 05/31/2024    627100 AR    Complaint  No I… NA    236118
-##  2 NA        2 1751889. 05/30/2024    627100 AR    Complaint  Part… NA    722310
-##  3 NA        3 1751740. 05/30/2024    627100 AR    Fat/Cat    Comp… NA    311111
-##  4 NA        4 1751873. 05/30/2024    627100 AR    Prog Rela… Comp… NA    484110
-##  5 NA        5 1751697. 05/30/2024    627100 AR    Fat/Cat    Part… NA    221122
-##  6 NA        6 1751660. 05/29/2024    627100 AR    Referral   Part… NA    424990
-##  7 NA        7 1749626. 05/21/2024    627100 AR    Complaint  Part… NA    336612
-##  8 NA        8 1749525. 05/21/2024    627100 AR    Complaint  Part… NA    424590
-##  9 NA        9 1749683. 05/21/2024    627100 AR    Referral   Part… NA    333318
-## 10 NA       10 1750109. 05/21/2024    627100 AR    Complaint  Part… NA    424590
-## # ℹ 1,317 more rows
+##  1 NA       21 1745747. 05/03/2024    627100 AR    Complaint  Part… NA    445110
+##  2 NA       22 1745679. 05/02/2024    627100 AR    Unprog Ot… Part… NA    236220
+##  3 NA       23 1745631. 05/02/2024    627100 AR    Unprog Ot… Part… NA    238120
+##  4 NA       24 1745496. 05/02/2024    627100 AR    Complaint  Part… NA    424470
+##  5 NA       25 1745008. 05/01/2024    627100 AR    Complaint  No I… NA    336212
+##  6 NA       26 1744509. 04/29/2024    627100 AR    Complaint  Part… NA    624230
+##  7 NA       27 1743659. 04/24/2024    627100 AR    Complaint  Part… NA    447110
+##  8 NA       28 1743307. 04/23/2024    627100 AR    Prog Rela… Part… NA    238130
+##  9 NA       29 1743418. 04/23/2024    627100 AR    Planned    Part… NA    238130
+## 10 NA       30 1743361. 04/23/2024    627100 AR    Prog Rela… Part… NA    236220
+## # ℹ 3,084 more rows
 ## # ℹ 2 more variables: Violations &lt;int&gt;, `Establishment Name` &lt;chr&gt;</code></pre>
 <pre class="r"><code>#rsw comment_fix your names:
 cleaned_table &lt;- cleaned_table %&gt;% 
   clean_names()</code></pre>
 <pre class="r"><code>write.csv(cleaned_table,&quot;osha_table.csv&quot;)</code></pre>
-<pre class="r"><code>colnames(cleaned_table)</code></pre>
-<pre><code>##  [1] &quot;x&quot;                  &quot;number&quot;             &quot;activity&quot;          
-##  [4] &quot;date_opened&quot;        &quot;rid&quot;                &quot;st&quot;                
-##  [7] &quot;type&quot;               &quot;scope&quot;              &quot;sic&quot;               
-## [10] &quot;naics&quot;              &quot;violations&quot;         &quot;establishment_name&quot;</code></pre>
-<pre class="r"><code>str(cleaned_table)</code></pre>
-<pre><code>## tibble [1,327 × 12] (S3: tbl_df/tbl/data.frame)
-##  $ x                 : logi [1:1327] NA NA NA NA NA NA ...
-##  $ number            : int [1:1327] 1 2 3 4 5 6 7 8 9 10 ...
-##  $ activity          : num [1:1327] 1751707 1751889 1751740 1751873 1751697 ...
-##  $ date_opened       : chr [1:1327] &quot;05/31/2024&quot; &quot;05/30/2024&quot; &quot;05/30/2024&quot; &quot;05/30/2024&quot; ...
-##  $ rid               : int [1:1327] 627100 627100 627100 627100 627100 627100 627100 627100 627100 627100 ...
-##  $ st                : chr [1:1327] &quot;AR&quot; &quot;AR&quot; &quot;AR&quot; &quot;AR&quot; ...
-##  $ type              : chr [1:1327] &quot;Complaint&quot; &quot;Complaint&quot; &quot;Fat/Cat&quot; &quot;Prog Related&quot; ...
-##  $ scope             : chr [1:1327] &quot;No Insp/Process Inactive&quot; &quot;Partial&quot; &quot;Complete&quot; &quot;Complete&quot; ...
-##  $ sic               : logi [1:1327] NA NA NA NA NA NA ...
-##  $ naics             : int [1:1327] 236118 722310 311111 484110 221122 424990 336612 424590 333318 424590 ...
-##  $ violations        : int [1:1327] NA NA NA NA NA NA NA NA NA NA ...
-##  $ establishment_name: chr [1:1327] &quot;Veritas Restoration South Llc&quot; &quot;Aramark&quot; &quot;Pet Solutions, Llc&quot; &quot;Roger Brian Boyer&quot; ...</code></pre>
-<pre class="r"><code># relevant_osha &lt;- cleaned_table %&gt;% 
-#   select(`Date Opened`,NAICS, `Establishment Name`, Type)
+<pre class="r"><code># Load the OSHA data
+cleaned_table &lt;- read.csv(&quot;osha_table.csv&quot;)
 
-#rsw comment - I fixed your names
+# Select relevant columns and clean names
 relevant_osha &lt;- cleaned_table %&gt;% 
   select(date_opened, naics, establishment_name, type) %&gt;% 
-  mutate(naics1 = as.character(naics))</code></pre>
-<pre class="r"><code># That is about how far I got today, tomorrow I expect to be able to use the clean data for analysis and consequent visualization by taking the industry (NAICS number) and seeing which industries have the most inspections performed by OSHA, as well as see which places/industries have the most fatalities per the (fat/cat) type of complaint. </code></pre>
-<pre class="r"><code># cleaning up the date 
+  mutate(naics1 = as.character(naics))
 
-library(lubridate)</code></pre>
-<p>#rsw comment - this data was not loaded in your repo</p>
-<pre class="r"><code>library(readxl)
-
-
-# gfg_data=read_excel(Users/rachellsanchez/Desktop/DJNF_Merrill/2022-NAICS-Codes-listed-numerically-2-Digit-through-6-Digit.xlsx)
-
-#rsw fixed:
+# Load the NAICS data
 naics &lt;- read_excel(&quot;/Users/rachellsanchez/Desktop/DJNF_Merrill/OSHA Project/NAICS_codes.xlsx&quot;) %&gt;% 
   clean_names() %&gt;% 
-  rename(naics1 = x2022_naics_us_code, industry = x2022_naics_us_title)</code></pre>
-<pre class="r"><code># finding which industries have the most inspections
+  rename(naics1 = x2022_naics_us_code, industry = x2022_naics_us_title)
 
+# Join the OSHA data with the NAICS data
 joined_table &lt;- relevant_osha %&gt;%
-  inner_join(naics, by=c(&quot;naics1&quot;=&quot;naics1&quot;))</code></pre>
-<pre class="r"><code>joined_table %&gt;% 
+  inner_join(naics, by = c(&quot;naics1&quot; = &quot;naics1&quot;))
+
+# Find the count of inspections per industry
+inspection_counts &lt;- joined_table %&gt;% 
   count(industry) %&gt;% 
   arrange(desc(n))</code></pre>
-<pre><code>## # A tibble: 278 × 2
-##    industry                                                             n
-##    &lt;chr&gt;                                                            &lt;int&gt;
-##  1 Roofing Contractors                                                 98
-##  2 Framing Contractors                                                 88
-##  3 Commercial and Institutional Building Construction                  61
-##  4 Poultry Processing                                                  52
-##  5 Water and Sewer Line and Related Structures Construction            37
-##  6 Masonry Contractors                                                 30
-##  7 Temporary Help Services                                             25
-##  8 Sawmills                                                            23
-##  9 Electrical Contractors and Other Wiring Installation Contractors    22
-## 10 Plumbing, Heating, and Air-Conditioning Contractors                 20
-## # ℹ 268 more rows</code></pre>
-<pre class="r"><code># industries with the most osha entries
-# Roofing Contractors   
-# Framing Contractors   
-# Commercial and Institutional Building Construction    
-# Poultry Processing    
-# Water and Sewer Line and Related Structures Construction  
-# Masonry Contractors   
-# Temporary Help Services   
-# Sawmills  
-# Electrical Contractors and Other Wiring Installation Contractors</code></pre>
+<p><code>{r} {r, results= &#39;asis&#39;} cat(&#39;&lt;div class=&quot;flourish-embed flourish-parliament&quot; data-src=&quot;visualisation/18261633&quot;&gt;&lt;script src=&quot;https://public.flourish.studio/resources/embed.js&quot;&gt;&lt;/script&gt;&lt;/div&gt;&#39;)</code></p>
+<pre class="r"><code># Filter for Fat/Cat incidents
+fatalities_industry &lt;- relevant_osha %&gt;%
+  filter(type == &#39;Fat/Cat&#39;) %&gt;%
+  select(establishment_name, type, naics1)
+
+# Join with NAICS data to get industry names
+fatalities_industry &lt;- fatalities_industry %&gt;%
+  inner_join(naics, by = &quot;naics1&quot;)
+
+# Count Fat/Cat incidents per industry
+fatcat_counts &lt;- fatalities_industry %&gt;% 
+  count(industry) %&gt;% 
+  arrange(desc(n))
+
+print(fatcat_counts)</code></pre>
+<pre><code>##                                                                     industry  n
+## 1                                                         Poultry Processing 21
+## 2           Electrical Contractors and Other Wiring Installation Contractors  9
+## 3                                   Highway, Street, and Bridge Construction  8
+## 4                                                       Landscaping Services  8
+## 5                       Nursing Care Facilities (Skilled Nursing Facilities)  8
+## 6                                                                    Logging  7
+## 7                                     General Medical and Surgical Hospitals  6
+## 8                                                        Roofing Contractors  5
+## 9                          Structural Steel and Precast Concrete Contractors  5
+## 10                                     All Other Specialty Trade Contractors  4
+## 11                        Commercial and Institutional Building Construction  4
+## 12                        General Freight Trucking, Long-Distance, Truckload  4
+## 13                       Plumbing, Heating, and Air-Conditioning Contractors  4
+## 14                                                                  Sawmills  4
+## 15           Specialized Freight (except Used Goods) Trucking, Long-Distance  4
+## 16                                      All Other Miscellaneous Crop Farming  3
+## 17                                             Employment Placement Agencies  3
+## 18                         Iron and Steel Mills and Ferroalloy Manufacturing  3
+## 19                                               Limited-Service Restaurants  3
+## 20                                                              Rice Milling  3
+## 21                  Water and Sewer Line and Related Structures Construction  3
+## 22                                                            Cotton Ginning  2
+## 23                                   Cut Stock, Resawing Lumber, and Planing  2
+## 24       Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing  2
+## 25                                    Fertilizer (Mixing Only) Manufacturing  2
+## 26                                                       Framing Contractors  2
+## 27                                 Grain and Field Bean Merchant Wholesalers  2
+## 28            Lumber, Plywood, Millwork, and Wood Panel Merchant Wholesalers  2
+## 29         New Single-Family Housing Construction (except For-Sale Builders)  2
+## 30                            Other Heavy and Civil Engineering Construction  2
+## 31                                                                Pulp Mills  2
+## 32                                             Residential Property Managers  2
+## 33                               Soil Preparation, Planting, and Cultivating  2
+## 34                   Specialized Freight (except Used Goods) Trucking, Local  2
+## 35                                        Tire and Tube Merchant Wholesalers  2
+## 36                                            Abrasive Product Manufacturing  1
+## 37            All Other Miscellaneous Fabricated Metal Product Manufacturing  1
+## 38                                     All Other Miscellaneous Manufacturing  1
+## 39                         All Other Miscellaneous Waste Management Services  1
+## 40                All Other Professional, Scientific, and Technical Services  1
+## 41                          All Other Transportation Equipment Manufacturing  1
+## 42                             Aluminum Sheet, Plate, and Foil Manufacturing  1
+## 43                                                        Ambulance Services  1
+## 44                                      Animal (except Poultry) Slaughtering  1
+## 45                   Automobile and Other Motor Vehicle Merchant Wholesalers  1
+## 46                                                             Boat Building  1
+## 47                                                                Car Washes  1
+## 48                                                Cemeteries and Crematories  1
+## 49                                                              Corn Farming  1
+## 50                              Corrugated and Solid Fiber Box Manufacturing  1
+## 51                                Elevator and Moving Stairway Manufacturing  1
+## 52                                      Farm Product Warehousing and Storage  1
+## 53              Farm and Garden Machinery and Equipment Merchant Wholesalers  1
+## 54                                                      Flooring Contractors  1
+## 55                                                 General Automotive Repair  1
+## 56                                           General Freight Trucking, Local  1
+## 57                                           General Warehousing and Storage  1
+## 58                                                 Home Health Care Services  1
+## 59                                  Hotels (except Casino Hotels) and Motels  1
+## 60                                            Hydroelectric Power Generation  1
+## 61                                          Industrial Building Construction  1
+## 62                                       Inland Water Freight Transportation  1
+## 63                                                            Iron Foundries  1
+## 64           Iron and Steel Pipe and Tube Manufacturing from Purchased Steel  1
+## 65  Lawn and Garden Tractor and Home Lawn and Garden Equipment Manufacturing  1
+## 66                            Lessors of Residential Buildings and Dwellings  1
+## 67                                            Livestock Merchant Wholesalers  1
+## 68                                                     Marine Cargo Handling  1
+## 69                                    Metal Tank (Heavy Gauge) Manufacturing  1
+## 70                           Motor Vehicle Parts (Used) Merchant Wholesalers  1
+## 71                                                      Motor Vehicle Towing  1
+## 72                                     Oilseed and Grain Combination Farming  1
+## 73                                           Other Animal Food Manufacturing  1
+## 74                                      Other Building Equipment Contractors  1
+## 75                                      Other Concrete Product Manufacturing  1
+## 76            Other Foundation, Structure, and Building Exterior Contractors  1
+## 77                   Other Grocery and Related Products Merchant Wholesalers  1
+## 78                           Other Nonhazardous Waste Treatment and Disposal  1
+## 79                           Other Support Activities for Air Transportation  1
+## 80                         Other Vegetable (except Potato) and Melon Farming  1
+## 81                                                    Other Waste Collection  1
+## 82                                                          Paperboard Mills  1
+## 83                                                      Petroleum Refineries  1
+## 84                                                        Poultry Hatcheries  1
+## 85                          Poultry and Poultry Product Merchant Wholesalers  1
+## 86          Power and Communication Line and Related Structures Construction  1
+## 87                                 Prefabricated Wood Building Manufacturing  1
+## 88                                                                Racetracks  1
+## 89                                  Recyclable Material Merchant Wholesalers  1
+## 90                      Regulation of Agricultural Marketing and Commodities  1
+## 91                                                              Rice Farming  1
+## 92                                          Rolled Steel Shape Manufacturing  1
+## 93                                      Sanitary Paper Product Manufacturing  1
+## 94                                                      Short Line Railroads  1
+## 95                                                           Soybean Farming  1
+## 96                                           Spice and Extract Manufacturing  1
+## 97   Supermarkets and Other Grocery Retailers (except Convenience Retailers)  1
+## 98                             Support Activities for Oil and Gas Operations  1
+## 99                                                   Temporary Help Services  1
+## 100                                                  Timber Tract Operations  1
+## 101                                   Tire Manufacturing (except Retreading)  1
+## 102                                              Truck Trailer Manufacturing  1
+## 103       Urethane and Other Foam Product (except Polystyrene) Manufacturing  1</code></pre>
+<pre class="r"><code># Save the Fat/Cat data to a CSV
+write.csv(fatalities_industry, &quot;fatalities_industry.csv&quot;)</code></pre>
+<pre class="r"><code>joined_table %&gt;% 
+  mutate(date1=mdy(date_opened)) %&gt;% 
+  mutate(year=year(date1)) %&gt;% 
+  filter(industry==&quot;Poultry Processing&quot;) %&gt;% 
+  filter(type==&quot;Fat/Cat&quot;) %&gt;% 
+  group_by(year) %&gt;% 
+  count(year)</code></pre>
+<pre><code>## # A tibble: 6 × 2
+## # Groups:   year [6]
+##    year     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1  2018     1
+## 2  2019     1
+## 3  2020    11
+## 4  2021     5
+## 5  2022     2
+## 6  2024     1</code></pre>
+<pre class="r"><code>joined_table %&gt;% 
+  mutate(date1=mdy(date_opened)) %&gt;% 
+  mutate(year=year(date1)) %&gt;% 
+  filter(industry==&quot;Electrical Contractors and Other Wiring Installation Contractors&quot;) %&gt;% 
+  filter(type==&quot;Fat/Cat&quot;) %&gt;% 
+  group_by(year) %&gt;% 
+  count(year)</code></pre>
+<pre><code>## # A tibble: 6 × 2
+## # Groups:   year [6]
+##    year     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1  2017     1
+## 2  2018     1
+## 3  2020     1
+## 4  2021     3
+## 5  2022     1
+## 6  2023     2</code></pre>
+<pre class="r"><code>joined_table %&gt;% 
+  mutate(date1=mdy(date_opened)) %&gt;% 
+  mutate(year=year(date1)) %&gt;% 
+  filter(industry==&quot;Highway, Street, and Bridge Construction&quot;) %&gt;% 
+  filter(type==&quot;Fat/Cat&quot;) %&gt;% 
+  group_by(year) %&gt;% 
+  count(year)</code></pre>
+<pre><code>## # A tibble: 5 × 2
+## # Groups:   year [5]
+##    year     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1  2014     1
+## 2  2015     1
+## 3  2016     1
+## 4  2019     3
+## 5  2020     2</code></pre>
 
 
 

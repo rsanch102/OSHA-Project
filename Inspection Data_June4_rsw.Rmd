@@ -1,11 +1,18 @@
 ---
-title: "new osha inspections"
+title: "Investigating which businesses are inspected by OSHA; which industries are most dangerous?"
 output:
   html_document: default
   word_document: default
-date: "2024-06-03"
+date: "2024-06-05"
 ---
 
+![](images/https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.arkansasonline.com%2Flisten%2F&psig=AOvVaw2g9k1NKXCF61O5S28-44_c&ust=1717728305432000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCPih5d76xYYDFQAAAAAdAAAAABAQ.png)
+
+**Memo**
+
+This would be an investigation into Occupational Safety and Health Administration (OSHA) data in Arkansas to determine which industries receive the most inspections and which kinds. Then consequently, use the inspection data to investigate these reports, which industries or companies have the most severe violations, or complaints per business. 
+
+Construction and poultry businesses are the industries with the most fatalities and severe injuries. There is a pattern of workers falling off of heights of more than 14ft because of dangerous conditions and no guardrails.Employers are ignoring OSHA regulations, and I want to explore how often OSHA is following up with potentially violating businesses.
 
 ```{r setup, include=FALSE}
 #I loaded two libraries into R, ###httr ### hot and rvest, to pull a http and scrape data from a webpage. 
@@ -21,6 +28,8 @@ library(httr)
 library(rvest)
 library(tidyverse)
 library(janitor)
+library(readxl)
+library(lubridate)
 ```
 
 ```{r}
@@ -49,7 +58,7 @@ headers <- c(
 # “show=2000&p_violations_exist=both”
 
 # Define the URL
-url <- "https://www.osha.gov/ords/imis/establishment.search?establishment=&state=AR&officetype=all&office=627100&sitezip=100000&startmonth=06&startday=03&startyear=2019&endmonth=06&endday=03&endyear=2024&p_case=all&p_start=160&p_finish=180&p_sort=12&p_desc=DESC&p_direction=Prev&p_show=2000&p_violations_exist=both"
+url <- "https://www.osha.gov/ords/imis/establishment.search?establishment=&state=AR&officetype=all&office=627100&sitezip=100000&startmonth=01&startday=01&startyear=2014&endmonth=06&endday=05&endyear=2024&p_case=all&p_violations_exist=both&p_start=&p_finish=20&p_sort=12&p_desc=DESC&p_direction=Next&p_show=3500"
 
 # Make the GET request with headers
 response <- GET(url, add_headers(.headers = headers))
@@ -89,72 +98,84 @@ cleaned_table <- cleaned_table %>%
 write.csv(cleaned_table,"osha_table.csv")
 ```
 
-```{r}
-colnames(cleaned_table)
-```
 
 ```{r}
-str(cleaned_table)
-```
-```{r}
-# relevant_osha <- cleaned_table %>% 
-#   select(`Date Opened`,NAICS, `Establishment Name`, Type)
+# Load the OSHA data
+cleaned_table <- read.csv("osha_table.csv")
 
-#rsw comment - I fixed your names
+# Select relevant columns and clean names
 relevant_osha <- cleaned_table %>% 
   select(date_opened, naics, establishment_name, type) %>% 
   mutate(naics1 = as.character(naics))
-```
 
-```{r}
-# That is about how far I got today, tomorrow I expect to be able to use the clean data for analysis and consequent visualization by taking the industry (NAICS number) and seeing which industries have the most inspections performed by OSHA, as well as see which places/industries have the most fatalities per the (fat/cat) type of complaint. 
-```
-
-
-
-```{r}
-# cleaning up the date 
-
-library(lubridate)
-```
-
-#rsw comment - this data was not loaded in your repo
-```{r}
-library(readxl)
-
-
-# gfg_data=read_excel(Users/rachellsanchez/Desktop/DJNF_Merrill/2022-NAICS-Codes-listed-numerically-2-Digit-through-6-Digit.xlsx)
-
-#rsw fixed:
+# Load the NAICS data
 naics <- read_excel("/Users/rachellsanchez/Desktop/DJNF_Merrill/OSHA Project/NAICS_codes.xlsx") %>% 
   clean_names() %>% 
   rename(naics1 = x2022_naics_us_code, industry = x2022_naics_us_title)
 
-
-```
-
-```{r}
-# finding which industries have the most inspections
-
+# Join the OSHA data with the NAICS data
 joined_table <- relevant_osha %>%
-  inner_join(naics, by=c("naics1"="naics1"))
-```
+  inner_join(naics, by = c("naics1" = "naics1"))
 
-
-```{r}
-joined_table %>% 
+# Find the count of inspections per industry
+inspection_counts <- joined_table %>% 
   count(industry) %>% 
   arrange(desc(n))
 
-# industries with the most osha entries
-# Roofing Contractors	
-# Framing Contractors	
-# Commercial and Institutional Building Construction	
-# Poultry Processing	
-# Water and Sewer Line and Related Structures Construction	
-# Masonry Contractors	
-# Temporary Help Services	
-# Sawmills	
-# Electrical Contractors and Other Wiring Installation Contractors
+```
+```{r} {r, results= 'asis'}
+cat('<div class="flourish-embed flourish-parliament" data-src="visualisation/18261633"><script src="https://public.flourish.studio/resources/embed.js"></script></div>')
+```
+
+
+```{r}
+# Filter for Fat/Cat incidents
+fatalities_industry <- relevant_osha %>%
+  filter(type == 'Fat/Cat') %>%
+  select(establishment_name, type, naics1)
+
+# Join with NAICS data to get industry names
+fatalities_industry <- fatalities_industry %>%
+  inner_join(naics, by = "naics1")
+
+# Count Fat/Cat incidents per industry
+fatcat_counts <- fatalities_industry %>% 
+  count(industry) %>% 
+  arrange(desc(n))
+
+print(fatcat_counts)
+
+# Save the Fat/Cat data to a CSV
+write.csv(fatalities_industry, "fatalities_industry.csv")
 
 ```
+```{r}
+joined_table %>% 
+  mutate(date1=mdy(date_opened)) %>% 
+  mutate(year=year(date1)) %>% 
+  filter(industry=="Poultry Processing") %>% 
+  filter(type=="Fat/Cat") %>% 
+  group_by(year) %>% 
+  count(year)
+```
+
+```{r}
+joined_table %>% 
+  mutate(date1=mdy(date_opened)) %>% 
+  mutate(year=year(date1)) %>% 
+  filter(industry=="Electrical Contractors and Other Wiring Installation Contractors") %>% 
+  filter(type=="Fat/Cat") %>% 
+  group_by(year) %>% 
+  count(year)
+```
+
+```{r}
+joined_table %>% 
+  mutate(date1=mdy(date_opened)) %>% 
+  mutate(year=year(date1)) %>% 
+  filter(industry=="Highway, Street, and Bridge Construction") %>% 
+  filter(type=="Fat/Cat") %>% 
+  group_by(year) %>% 
+  count(year)
+```
+
